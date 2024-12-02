@@ -22,9 +22,65 @@ func main() {
 
 	fmt.Println("\n## Reports read ")
 	fmt.Printf("\t reports read: %d\n", len(reports))
+
 	fmt.Println("\n# Calculate changes")
+	var changes [][]int = calculateChanges(reports)
+	fmt.Printf("\tChanges calculated: %d\n", len(changes))
+
 	fmt.Println("\n# Evaluate safety")
+	var safety map[int]bool = evaluateSafety(changes)
+	fmt.Printf("\t%v\n", safety)
+
 	fmt.Println("\n# Sum reports")
+	var safetySum int = 0
+	for _, value := range safety {
+		if value {
+			safetySum++
+		}
+	}
+	fmt.Printf("\tNumber of safe reports: %d", safetySum)
+}
+
+func evaluateSafety(changes [][]int) map[int]bool {
+	results := make(map[int]bool)
+
+	for reportNo, changeRow := range changes {
+		var increase bool
+		var safe bool = true
+		for changeIndx, change := range changeRow {
+			if change > 3 || change < -3 || change == 0 {
+				safe = false
+				break
+			}
+			if changeIndx == 0 {
+				increase = change > 0
+			} else {
+				newDirection := change > 0
+				if newDirection != increase {
+					safe = false
+					break
+				}
+			}
+
+		}
+		results[reportNo] = safe
+	}
+
+	return results
+}
+
+func calculateChanges(reports [][]int) (changes [][]int) {
+	for _, report := range reports {
+		noOfLevels := len(report)
+		noOfChanges := noOfLevels - 1
+		var changesRow []int
+		for i := 0; i < noOfChanges; i++ {
+			changesRow = append(changesRow, report[i+1]-report[i])
+		}
+		fmt.Printf("\t%d\n", changesRow)
+		changes = append(changes, changesRow)
+	}
+	return changes
 }
 
 func getReportsFromFile(fileName string) (reports [][]int, err error) {
